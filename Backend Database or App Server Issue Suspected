@@ -1,0 +1,49 @@
+ -Situation:
+-The Member Lookup web service is not returning results. API logs show timeout errors. Support team needs to identify if the problem is with the app server, database, or network latency.
+-Check App Server Health (CPU/Memory)
+
+top -c
+
+ -See if high CPU or memory usage is causing slow response.
+-2️⃣ Check Number of Open Connections
+
+netstat -an | grep :8080 | wc -l
+-Why: Check if the app server (port 8080) is overloaded with connections.
+-3️⃣ Test Connectivity to the Database
+
+ -- OR
+nc -zv dbhost 1521
+Why: Ensure the application server can reach the database.
+
+--Check if the SQL Query is Slow (Run Manually)
+
+sqlplus appuser@DB
+
+-- Inside SQL prompt
+SELECT * FROM members WHERE member_id = 'M123456';
+
+--Why: Validate if the query itself is slow or blocked.
+
+--5️⃣ Identify Long-Running SQL (Oracle Example)
+ps -ef | grep ora_ | grep LOCAL=NO
+--Why: Identify Oracle DB sessions stuck in long-running queries.
+
+--6️⃣ Look at Application Logs
+tail -n 100 /opt/bcbs_app/logs/member_lookup.log | grep -i "timeout"
+
+--Why: Restart service if it's unresponsive after checks.
+
+--8️⃣ Verify if API is Back Online
+curl -I http://localhost:8080/member/api/status
+--Why: Confirm whether API is now healthy (HTTP 200 OK expected)
+
+--Outcome:
+--You quickly identify if the problem is resource usage, a database delay, or a service crash.
+
+--You respond with clear logs, evidence, and potentially restart the service.
+
+--You ensure continuity of a critical healthcare lookup feature.
+
+
+
+
